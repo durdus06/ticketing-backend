@@ -1,7 +1,5 @@
 # Module changelogs run in the order listed here, so foreign keys always point to tables that already exist.
 # Inside a module folder, files run alphabetically, so name them 001-..., 002-...
-# Add one entry per module when its first migration is created, for example:
-#
-#  - includeAll:
-#      path: db/changelog/user/
-databaseChangeLog: []
+databaseChangeLog:
+  - includeAll:
+      path: db/changelog/user/
