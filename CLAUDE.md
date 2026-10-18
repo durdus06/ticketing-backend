@@ -1,4 +1,4 @@
-# Project: Ticketing Platform
+# Project: Ticketing Backend
 
 An event ticketing platform built to practice concurrency, distributed systems and production engineering.
 
