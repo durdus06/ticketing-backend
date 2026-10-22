@@ -1,0 +1,21 @@
+# Maven build çıktıları
+target/
+
+# Git dosyaları
+.git/
+.gitignore
+
+# IDE dosyaları
+.idea/
+.vscode/
+*.iml
+
+# İşletim sistemi dosyaları
+.DS_Store
+
+# Log dosyaları
+*.log
+
+# Yerel ortam ve gizli bilgiler
+.env
+.env.*
