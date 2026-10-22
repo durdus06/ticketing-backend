@@ -38,7 +38,7 @@ Account statuses:
 ## 3. Functional Requirements
 
 ### 3.1 Accounts
-- FR-1: A guest can register as a customer with an email and a password. Self-registration never creates an organizer or admin account. Registration requires a date of birth, and the customer must be at least 18 years old (self-declared, not verified). The age is calculated against the current date in `Europe/Istanbul`.
+- FR-1: A guest can register as a customer with an email and a password. Self-registration never creates an organizer or admin account. Registration requires a date of birth, and a password of at least 10 characters and at most 72 bytes (UTF-8), and the customer must be at least 18 years old (self-declared, not verified). The age is calculated against the current UTC date.
 - FR-2: A registered user can log in and log out.
 - FR-23: An admin can create organizer accounts. There is no self-registration for organizers. The admin enters the organizer's details, and the organizer receives an invitation email with a link to set their own password (FR-30). No password is ever chosen or seen by the admin. Organizer creation is recorded in the audit log (FR-20).
 - FR-31: A customer or organizer can delete their own account. Deletion is a soft delete: `deleted_at` is set, the account can no longer log in, and the account `status` is not changed. Personal data is anonymized later (FR-33). Rows are never hard-deleted. A customer can delete their account even while holding tickets; deletion does not cancel or refund those tickets, and the tickets stay valid for the event.

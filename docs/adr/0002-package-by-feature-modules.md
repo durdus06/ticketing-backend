@@ -8,7 +8,9 @@ The project starts as a modular monolith. Module boundaries should be enforced b
 
 ## Decision
 
-Code is organized per module (`user`, `event`, `reservation`, `payment`, `audit`), not per technical layer. Inside a module, classes are `package-private` unless they are part of the module's deliberate public API. Modules do not use each other's entities or repositories. They talk through a public service or interface, and reference each other's data by ID only. Liquibase changelogs follow the same structure (one folder per module, listed in dependency order in the master changelog).
+Code is organized per module (`user`, `event`, `reservation`, `payment`, `audit`), not per technical layer. Inside a module, classes are `package-private` unless they are part of the module's deliberate public API.
+
+When a module grows, it is split into sub-packages by sub-feature (for example `user.registration` and `user.token`), not by technical layer. Each sub-package keeps its controller, service, DTOs and exceptions `package-private`. Only types shared between sub-packages (for example `User` and `UserRepository` in the module root) are `public`. Once a second module exists, an ArchUnit test will enforce that other modules do not use these types. Modules do not use each other's entities or repositories. They talk through a public service or interface, and reference each other's data by ID only. Liquibase changelogs follow the same structure (one folder per module, listed in dependency order in the master changelog).
 
 ## Alternatives
 
