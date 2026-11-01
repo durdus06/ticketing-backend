@@ -31,8 +31,16 @@ Short-lived stateless JWT access tokens plus long-lived refresh tokens.
 - The API needs CORS configuration for the frontend origins.
 - Rate limiting and lockout on login (A07) are still required and are implemented separately.
 
+## Decisions made at implementation
+
+- **Refresh token transport:** an `HttpOnly`, `Secure`, `SameSite=Strict` cookie limited to `Path=/api/auth`. Scripts cannot read it, and it is never sent on cross-site requests, which is also the CSRF protection for `/refresh` and `/logout`. The frontend is served same-origin (Vite proxy in development, a reverse proxy for `/api` in production), so CORS is off unless `ticketing.auth.cors-allowed-origins` lists origins.
+- **Signing:** HS256 with a secret of at least 32 bytes from `TICKETING_AUTH_JWT_SECRET`. The application refuses to start without it. This is simpler than asymmetric keys; switching to RS256/EdDSA is needed before verification is split into another service.
+- **Lifetimes:** access token 10 minutes, refresh token 7 days (both configurable).
+- **Claims:** `sub` (user id), `role`, `iss`, `iat`, `exp`. No personal data.
+- **Errors:** all login failures (unknown email, wrong password, suspended, deleted) return the same `401 INVALID_CREDENTIALS`. A dummy password check runs for unknown emails to even out response times.
+
 ## Open points
 
-- Exact access token lifetime and refresh token lifetime.
-- Refresh token transport and storage on the client (to be recorded in the frontend ADR).
+- Rate limiting and lockout on login (NFR-14, A07) are not implemented yet.
+- A scheduled job must call `RefreshTokenService.deleteExpired()`; none exists yet.
 - Whether to add a per-request account state check if the revocation gap proves too long.

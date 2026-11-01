@@ -17,7 +17,8 @@ import org.springframework.context.annotation.Import;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@SpringBootTest
+@SpringBootTest(properties = { "ticketing.auth.jwt-secret=test-only-secret-0123456789abcdef0123",
+		"ticketing.auth.refresh-cookie-secure=false" })
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 public @interface IntegrationTest {

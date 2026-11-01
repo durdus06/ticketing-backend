@@ -1,0 +1,6 @@
+# Local development only. Activate with SPRING_PROFILES_ACTIVE=dev. These values are throwaway and must never be used elsewhere.
+ticketing:
+  auth:
+    jwt-secret: dev-only-secret-change-me-0123456789abcdef
+    # Plain HTTP on localhost: browsers drop Secure cookies there
+    refresh-cookie-secure: false

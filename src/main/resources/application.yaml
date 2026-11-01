@@ -9,3 +9,12 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+
+ticketing:
+  auth:
+    # Required. Set TICKETING_AUTH_JWT_SECRET (at least 32 bytes) outside development; the application refuses to start without it.
+    jwt-secret: ${TICKETING_AUTH_JWT_SECRET:}
+    access-token-ttl: 10m
+    refresh-token-ttl: 7d
+    refresh-cookie-secure: true
+    cors-allowed-origins: []

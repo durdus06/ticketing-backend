@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Table(name = "users")
@@ -88,8 +89,13 @@ public class User {
 		}
 	}
 
-	boolean canLogin() {
+	public boolean canLogin() {
 		return status == UserStatus.ACTIVE && deletedAt == null;
+	}
+
+	// The hash itself stays inside the user package. A user without a hash (anonymized) never matches.
+	public boolean passwordMatches(String rawPassword, PasswordEncoder passwordEncoder) {
+		return passwordHash != null && passwordEncoder.matches(rawPassword, passwordHash);
 	}
 
 	boolean isDeleted() {
