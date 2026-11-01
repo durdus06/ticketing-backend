@@ -27,6 +27,7 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		Map<String, String> errors = new TreeMap<>();
 		ex.getBindingResult().getFieldErrors().forEach(error -> errors.putIfAbsent(error.getField(), error.getDefaultMessage()));
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Request validation failed");
+		problem.setProperty("code", "VALIDATION_FAILED");
 		problem.setProperty("errors", errors);
 		return handleExceptionInternal(ex, problem, headers, status, request);
 	}

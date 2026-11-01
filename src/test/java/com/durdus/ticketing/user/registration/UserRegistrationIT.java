@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import com.durdus.ticketing.IntegrationTest;
 
@@ -40,6 +41,13 @@ class UserRegistrationIT {
 	void cleanDatabase() {
 		jdbc.update("delete from user_tokens");
 		jdbc.update("delete from users");
+	}
+
+	private ResultActions registerRequest(String email, String dateOfBirth, String password) throws Exception {
+		String body = """
+				{"firstName": "Ali", "lastName": "Veli", "dateOfBirth": "%s", "email": "%s", "password": "%s"}
+				""".formatted(dateOfBirth, email, password);
+		return mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body));
 	}
 
 	private int register(String email, String dateOfBirth, String password) throws Exception {
@@ -97,6 +105,7 @@ class UserRegistrationIT {
 
 		mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
 				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
 				.andExpect(jsonPath("$.errors.firstName").exists())
 				.andExpect(jsonPath("$.errors.email").exists())
 				.andExpect(jsonPath("$.errors.lastName").doesNotExist());
@@ -106,20 +115,34 @@ class UserRegistrationIT {
 	void rejectsACustomerUnder18() throws Exception {
 		String turns18Tomorrow = LocalDate.now(ZoneOffset.UTC).minusYears(18).plusDays(1).toString();
 
-		assertThat(register("kid@example.com", turns18Tomorrow, PASSWORD)).isEqualTo(422);
+		registerRequest("kid@example.com", turns18Tomorrow, PASSWORD)
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("UNDERAGE_USER"));
 		assertThat(jdbc.queryForObject("select count(*) from users", Integer.class)).isZero();
 	}
 
 	@Test
 	void rejectsAWeakPassword() throws Exception {
-		assertThat(register("ali@example.com", "1990-05-20", "short")).isEqualTo(422);
+		registerRequest("ali@example.com", "1990-05-20", "short")
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("WEAK_PASSWORD"));
+	}
+
+	@Test
+	void rejectsAPasswordLongerThan72Bytes() throws Exception {
+		// 40 two-byte characters: within the 128 character DTO limit but 80 bytes in UTF-8
+		registerRequest("ali@example.com", "1990-05-20", "ü".repeat(40))
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("WEAK_PASSWORD"));
 	}
 
 	@Test
 	void rejectsADuplicateEmailIgnoringCase() throws Exception {
 		assertThat(register("ali@example.com", "1990-05-20", PASSWORD)).isEqualTo(201);
 
-		assertThat(register("ALI@example.com", "1990-05-20", PASSWORD)).isEqualTo(409);
+		registerRequest("ALI@example.com", "1990-05-20", PASSWORD)
+				.andExpect(status().isConflict())
+				.andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"));
 	}
 
 	@Test

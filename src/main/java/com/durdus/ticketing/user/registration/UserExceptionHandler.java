@@ -10,14 +10,26 @@ import com.durdus.ticketing.user.UnderageUserException;
 @RestControllerAdvice
 class UserExceptionHandler {
 
+	// The "code" property is a stable, machine-readable contract for clients. The detail text may change.
 	@ExceptionHandler(EmailAlreadyRegisteredException.class)
 	ProblemDetail handleEmailAlreadyRegistered(EmailAlreadyRegisteredException ex) {
-		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+		return problem(HttpStatus.CONFLICT, "EMAIL_ALREADY_REGISTERED", ex);
 	}
 
-	@ExceptionHandler({ UnderageUserException.class, WeakPasswordException.class })
-	ProblemDetail handleBusinessRuleViolation(RuntimeException ex) {
-		return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+	@ExceptionHandler(UnderageUserException.class)
+	ProblemDetail handleUnderage(UnderageUserException ex) {
+		return problem(HttpStatus.UNPROCESSABLE_CONTENT, "UNDERAGE_USER", ex);
+	}
+
+	@ExceptionHandler(WeakPasswordException.class)
+	ProblemDetail handleWeakPassword(WeakPasswordException ex) {
+		return problem(HttpStatus.UNPROCESSABLE_CONTENT, "WEAK_PASSWORD", ex);
+	}
+
+	private static ProblemDetail problem(HttpStatus status, String code, RuntimeException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, ex.getMessage());
+		problem.setProperty("code", code);
+		return problem;
 	}
 
 }
